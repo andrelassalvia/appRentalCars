@@ -6,3 +6,4 @@ This repository is part of the online study material that aims to learn in pract
 -   Route::apiResource,
 -   CRUD,
 -   Model Injection and Type Hinting,
+-   Validation, Status Code, Accept, PATCH,
