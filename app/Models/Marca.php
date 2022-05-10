@@ -18,7 +18,7 @@ class Marca extends Model
     {
         return  [
             'nome' => 'required|unique:marcas,nome,'.$this->id.'|min:3',
-            'imagem' => 'required',
+            'imagem' => 'required|file|mimes:png',
         ];
 
       
@@ -29,6 +29,7 @@ class Marca extends Model
         return [
             'required' => 'The filed :attribute is required',
             'nome.unique' => 'This name already exists',
+            'imagem.mimes' => 'O arquivo deve ter a extensão do tipo .png'
         ];
     }
 }

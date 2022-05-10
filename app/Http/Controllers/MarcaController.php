@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Marca;
 use Illuminate\Http\Request;
-use Barryvdh\Debugbar\Facades\Debugbar;
+use Illuminate\Support\Facades\Storage;
 
 class MarcaController extends Controller
 {
@@ -30,14 +30,21 @@ class MarcaController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
-       
+    {              
+        $request->validate($this->marca->rules(), $this->marca->feedback());   
+        
+        // To store a file
+        $image = $request->imagem;
+        // $image->store('path', 'disco'); disco is configured in config/filesystems.php
+        $urn = $image->store('imagens', 'public');
 
-       
-
-        $request->validate($this->marca->rules(), $this->marca->feedback());
-        $brand = $this->marca->create($request->all());
-        return response()->json($brand, 201);
+        $marca = $this->marca->create(
+            [
+                'nome' => $request->nome,
+                'imagem' => $urn,
+            ]
+        );
+        return response()->json($marca, 201);
     }
 
     /**
@@ -51,9 +58,7 @@ class MarcaController extends Controller
        $brand = $this->marca->find($id);
        if($brand === null){
            return response()->json(['error' => "This brand doesn't extist"], 404); 
-       }
-       
-
+       }       
         return response()->json($brand, 200);
     }
 
@@ -82,8 +87,23 @@ class MarcaController extends Controller
             $request->validate($dynamicRules, $marca->feedback());
         } else {
             $request->validate($marca->rules(), $marca->feedback());
-        }        
-        $marca->update($request->all());
+        } 
+        
+        if($request->imagem){
+
+            // Delete the old image storaged in public disc
+            Storage::disk('public')->delete($marca->imagem);
+        }
+        $image = $request->imagem;
+        // $image->store('path', 'disco'); disco is configured in config/filesystems.php
+        $urn = $image->store('imagens', 'public');
+       
+        $marca->update(
+            [
+                'nome' => $request->nome,
+                'imagem' => $urn,
+            ]
+        );
         return response()->json($marca, 200);
     }
 
@@ -99,7 +119,12 @@ class MarcaController extends Controller
         if($marca === null){
             return response()->json(['error' => "This brand doesn't extist"], 404); 
         }
+                    
+            // Delete the old image storaged in public disc
+            Storage::disk('public')->delete($marca->imagem);
+                
         $marca->delete();
+        
         return response()->json(['msg' => 'Marca removida com sucesso.'], 200);
     }
 }
